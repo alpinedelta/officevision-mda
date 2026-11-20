@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Lotus 1-2-3 Spreadsheet with Google Sheets Sync (MDA Terminal Launcher)
+APP_DIR="${OV400_DIR:-$HOME/.local/share/officevision-mda}"
+
+IS_MDA=0
+if [ -z "$TERM" ] || [ "$TERM" = "dumb" ] || [ "$TERM" = "wsvt25" ] || [ "$TERM" = "vt100" ] || [ "$TERM" = "ansi" ] || [ "$MDA" = "1" ]; then
+    IS_MDA=1
+    export TERM=vt100
+    export MDA=1
+    stty rows 43 cols 90 2>/dev/null
+    export LINES=43
+    export COLUMNS=90
+    printf '\0337\033[1;43r\0338'
+fi
+
+python3 "${APP_DIR}/lotus123.py" "$@"
+RET=$?
+if [ "$IS_MDA" = "1" ]; then
+    printf '\033[r\033[1;43r\033[H\033[2J\033[0m\033[?25h'
+else
+    printf '\033[r\033[H\033[2J\033[0m\033[?25h'
+fi
+exit $RET

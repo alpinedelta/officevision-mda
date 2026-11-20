@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Plex MDA Terminal Music Controller Launcher
+VENV_PYTHON="${PMDA_VENV:-$HOME/.local/share/plex-mda-venv}/bin/python3"
+APP_DIR="${PMDA_DIR:-$HOME/.local/share/plex-mda}"
+
+if [ -x "$VENV_PYTHON" ]; then
+    PYTHON_BIN="$VENV_PYTHON"
+else
+    PYTHON_BIN="python3"
+fi
+
+IS_MDA=0
+if [ -z "$TERM" ] || [ "$TERM" = "dumb" ] || [ "$TERM" = "wsvt25" ] || [ "$TERM" = "vt100" ] || [ "$TERM" = "ansi" ] || [ "$MDA" = "1" ]; then
+    IS_MDA=1
+    export TERM=vt100
+    export MDA=1
+    stty rows 43 cols 90 2>/dev/null
+    export LINES=43
+    export COLUMNS=90
+    printf '\0337\033[1;43r\0338'
+fi
+
+export PYTHONPATH="${APP_DIR}${PYTHONPATH:+:$PYTHONPATH}"
+
+"${PYTHON_BIN}" "${APP_DIR}/main.py" "$@"
+RET=$?
+if [ "$IS_MDA" = "1" ]; then
+    printf '\033[r\033[1;43r\033[H\033[2J\033[0m\033[?25h'
+else
+    printf '\033[r\033[H\033[2J\033[0m\033[?25h'
+fi
+exit $RET
